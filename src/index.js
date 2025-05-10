@@ -39,7 +39,8 @@ const resolvers = {
       try {
         // 准备请求数据
         const requestData = {
-          messages: [{ role: 'user', content: message }],
+          messages: [{ role: 'system', content: message }],
+          model: "deepseek-chat",
         };
 
         // 如果有会话 ID，添加到请求中
