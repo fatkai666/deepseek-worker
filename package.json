@@ -1,0 +1,20 @@
+{
+  "name": "deepseek-worker",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@graphql-tools/schema": "^10.0.23",
+    "graphql": "^16.11.0",
+    "graphql-yoga": "4.0.4"
+  },
+  "devDependencies": {
+    "wrangler": "^4.14.4"
+  }
+}
