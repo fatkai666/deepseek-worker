@@ -51,15 +51,15 @@ const resolvers = {
       try {
         // 确保 context 和 env 存在
         if (!context) throw new Error('Context is undefined');
-        if (!context.env) throw new Error(`Env object is undefined in context, is context: ${JSON.stringify(context)}`);
+        if (!context.DEEPSEEK_API_KEY) throw new Error(`DEEPSEEK_API_KEY is undefined in context, is context: ${JSON.stringify(context)}`);
 
         const { message, conversationId, systemPrompt = "You are a helpful assistant." } = args;
         const env = context.env; // 获取环境变量
 
         // 获取环境变量
-        const API_KEY = env.DEEPSEEK_API_KEY;
-        const BASE_URL = env.DEEPSEEK_API_URL || 'https://api.deepseek.com';
-        const MODEL = env.DEEPSEEK_MODEL || 'deepseek-chat';
+        const API_KEY = context.DEEPSEEK_API_KEY;
+        const BASE_URL = context.DEEPSEEK_API_URL;
+        const MODEL = context.DEEPSEEK_MODEL;
 
         console.log('API configuration:', {
           baseUrl: BASE_URL,
