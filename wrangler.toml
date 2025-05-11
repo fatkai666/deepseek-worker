@@ -1,3 +1,8 @@
 name = "deepseek-graphql-worker"
 main = "src/index.js"
 compatibility_date = "2025-05-10"
+
+[vars]
+DEEPSEEK_API_KEY = ""
+DEEPSEEK_API_URL = "https://api.deepseek.com"
+DEEPSEEK_MODEL = "deepseek-chat"
