@@ -1,5 +1,6 @@
 import { createYoga } from 'graphql-yoga';
 import { makeExecutableSchema } from '@graphql-tools/schema';
+import OpenAI from "openai";
 
 // GraphQL Schema 定义
 const typeDefs = `
@@ -38,10 +39,10 @@ const resolvers = {
 
       try {
         // 准备请求数据
-        const requestData = {
-          messages: [{ role: 'user', content: message }],
+        const requestData = await openai.chat.completions.create({
+          messages: [{ role: "user", content: message }],
           model: "deepseek-chat",
-        };
+        });
 
         // 如果有会话 ID，添加到请求中
         if (conversationId) {
@@ -89,6 +90,9 @@ const resolvers = {
       }
     },
   },
+  landingPage: false,
+  cors: false,
+  logging: true
 };
 
 // 创建 GraphQL schema
@@ -155,7 +159,7 @@ export default {
       // 返回格式化的错误响应
       return new Response(
         JSON.stringify({
-          errors: [{ message: error.message || '未知错误' }]
+          errors: [{ ...(errors || {}), message: error.message || '未知错误' }]
         }),
         {
           status: 500,
