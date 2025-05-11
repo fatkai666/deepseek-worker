@@ -51,7 +51,7 @@ const resolvers = {
       try {
         // 确保 context 和 env 存在
         if (!context) throw new Error('Context is undefined');
-        if (!context.env) throw new Error('Env object is undefined in context');
+        if (!context.env) throw new Error(`Env object is undefined in context, is context.ley exist: ${context.DEEPSEEK_API_KEY}`);
 
         const { message, conversationId, systemPrompt = "You are a helpful assistant." } = args;
         const env = context.env; // 获取环境变量
