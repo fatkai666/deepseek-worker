@@ -1,7 +1,3 @@
 name = "deepseek-graphql-worker"
 main = "src/index.js"
-compatibility_date = "2023-01-01"
-
-[vars]
-AI_API_KEY = "sk-c3dc56252b714124b662c89398da4b58"
-AI_API_URL = "https://api.deepseek.com/v1/chat/completions"
+compatibility_date = "2025-05-10"
