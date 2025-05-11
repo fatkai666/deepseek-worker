@@ -1,5 +1,3 @@
-// src/index.js - 使用 OpenAI SDK 格式调用 DeepSeek API 的 Worker
-
 import { createYoga } from 'graphql-yoga';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 
@@ -7,6 +5,13 @@ import { makeExecutableSchema } from '@graphql-tools/schema';
 const typeDefs = `
   type Query {
     ping: String
+    envCheck: EnvCheckResult
+  }
+  
+  type EnvCheckResult {
+    hasApiKey: Boolean
+    apiUrl: String
+    model: String
   }
   
   type Message {
@@ -24,16 +29,32 @@ const typeDefs = `
   }
 `;
 
-// Resolver 函数实现
+// Resolver 函数实现 - 关键修复: 使用正确的上下文传递
 const resolvers = {
   Query: {
-    ping: () => 'hello, xiaopangza test',
+    ping: () => 'pong',
+    envCheck: (_, __, context) => {
+      // 确保 context 和 env 存在
+      if (!context) return { hasApiKey: false, apiUrl: 'Context is undefined', model: 'error' };
+      if (!context.env) return { hasApiKey: false, apiUrl: 'Context.env is undefined', model: 'error' };
+
+      const env = context.env;
+      return {
+        hasApiKey: !!env.DEEPSEEK_API_KEY,
+        apiUrl: env.DEEPSEEK_API_URL || 'Not set',
+        model: env.DEEPSEEK_MODEL || 'Not set'
+      };
+    }
   },
   Mutation: {
     chatWithAI: async (_, args, context) => {
       try {
+        // 确保 context 和 env 存在
+        if (!context) throw new Error('Context is undefined');
+        if (!context.env) throw new Error('Env object is undefined in context');
+
         const { message, conversationId, systemPrompt = "You are a helpful assistant." } = args;
-        const { env } = context;
+        const env = context.env; // 获取环境变量
 
         // 获取环境变量
         const API_KEY = env.DEEPSEEK_API_KEY;
@@ -154,7 +175,7 @@ const schema = makeExecutableSchema({
   resolvers,
 });
 
-// 创建 Yoga GraphQL 处理器
+// 创建 Yoga GraphQL 处理器 - 关键修复: 确保正确传递上下文
 const yoga = createYoga({
   schema,
   graphqlEndpoint: '/',
@@ -166,35 +187,12 @@ const yoga = createYoga({
     credentials: true,
   },
   graphiql: true,
-});
-
-// 更好的错误处理和格式化
-const formatError = (error) => {
-  console.error('GraphQL error:', error);
-
-  // 确定错误消息
-  let message = error.message || 'An unknown error occurred';
-
-  // 检查是否为余额不足错误
-  if (message.includes('余额不足') || message.includes('Insufficient Balance')) {
-    return {
-      message: '🚫 API 账户余额不足，请充值后再试',
-      extensions: {
-        code: 'INSUFFICIENT_BALANCE',
-        ...error.extensions,
-      }
-    };
+  // 重要：确保 context 正确传递环境变量
+  context: ({ request, env }) => {
+    // 明确将 env 传递给上下文
+    return { request, env };
   }
-
-  // 其他错误的格式化
-  return {
-    message,
-    extensions: {
-      ...(error.extensions || {}),
-      timestamp: new Date().toISOString(),
-    }
-  };
-};
+});
 
 // Worker 请求处理函数
 export default {
@@ -211,6 +209,27 @@ export default {
             'Access-Control-Max-Age': '86400',
           },
         });
+      }
+
+      // 增加环境变量检查端点
+      if (request.url.includes('/env-check')) {
+        return new Response(
+          JSON.stringify({
+            envAvailable: !!env,
+            envKeys: env ? Object.keys(env) : [],
+            hasApiKey: env && !!env.DEEPSEEK_API_KEY,
+            apiUrl: env ? (env.DEEPSEEK_API_URL || 'not set') : 'env is undefined',
+            model: env ? (env.DEEPSEEK_MODEL || 'not set') : 'env is undefined',
+            timestamp: new Date().toISOString()
+          }, null, 2),
+          {
+            status: 200,
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': '*',
+            }
+          }
+        );
       }
 
       // 处理 GraphQL 请求
