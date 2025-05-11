@@ -36,7 +36,7 @@ const resolvers = {
         const { env } = context;
 
         // 获取环境变量
-        const API_KEY = env.DEEPSEEK_API_KEY;
+        const API_KEY = context.DEEPSEEK_API_KEY;
         const BASE_URL = env.DEEPSEEK_API_URL || 'https://api.deepseek.com';
         const MODEL = env.DEEPSEEK_MODEL || 'deepseek-chat';
 
