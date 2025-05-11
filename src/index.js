@@ -87,10 +87,7 @@ const resolvers = {
         throw new Error(`调用 AI API 时出错: ${error.message || '未知错误'}`);
       }
     },
-  },
-  landingPage: false,
-  cors: false,
-  logging: true
+  }
 };
 
 // 创建 GraphQL schema
