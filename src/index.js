@@ -60,9 +60,13 @@ const resolvers = {
         });
 
         if (!response.ok) {
-          const errorText = await response.text();
-          console.error(`AI API error (${response.status}): ${errorText}`);
-          throw new Error(`AI API 响应错误 (${response.status}): ${errorText}`);
+          const errorData = await response.json();
+          console.error(`AI API error: ${errorData.error?.message}`);
+          if (errorData.error?.message === 'Insufficient Balance') {
+            throw new Error(`API 余额不足`);
+          }
+
+          throw new Error(`AI API 响应错误 ${errorData.error?.message}`);
         }
 
         const data = await response.json();
@@ -87,7 +91,7 @@ const resolvers = {
         throw new Error(`调用 AI API 时出错: ${error.message || '未知错误'}`);
       }
     },
-  }
+  },
 };
 
 // 创建 GraphQL schema
