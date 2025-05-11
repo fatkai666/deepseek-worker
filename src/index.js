@@ -37,42 +37,23 @@ const resolvers = {
       const AI_API_KEY = env.AI_API_KEY;
       const AI_API_URL = env.AI_API_URL;
 
+      const openai = new OpenAI({
+        baseURL: AI_API_URL,
+        apiKey: AI_API_KEY
+      });
+
       try {
         // 准备请求数据
-        const requestData = await openai.chat.completions.create({
+        const res = await openai.chat.completions.create({
           messages: [{ role: "user", content: message }],
           model: "deepseek-chat",
         });
 
-        // 如果有会话 ID，添加到请求中
-        if (conversationId) {
-          requestData.conversationId = conversationId;
-        }
-
-        console.log('Sending request to AI API:', JSON.stringify(requestData));
-
-        // 调用 AI API
-        const response = await fetch(AI_API_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${AI_API_KEY}`,
-          },
-          body: JSON.stringify(requestData),
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error(`AI API error (${response.status}): ${errorText}`);
-          throw new Error(`AI API 响应错误 (${response.status}): ${errorText}`);
-        }
-
-        const data = await response.json();
-        console.log('AI API response:', JSON.stringify(data));
+        console.log('AI API response:', JSON.stringify(res));
 
         // 确保数据结构符合预期
-        if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-          console.error('Unexpected API response format:', JSON.stringify(data));
+        if (!res.choices || !res.choices[0] || !res.choices[0].message) {
+          console.error('Unexpected API response format:', JSON.stringify(res));
           throw new Error('AI API 返回了意外的响应格式');
         }
 
@@ -80,9 +61,9 @@ const resolvers = {
         return {
           messages: [
             { role: 'user', content: message },
-            { role: 'assistant', content: data.choices[0].message.content }
+            { role: 'assistant', content: res.choices[0].message.content }
           ],
-          conversationId: data.conversationId || null,
+          conversationId: res.conversationId || null,
         };
       } catch (error) {
         console.error('Error calling AI API:', error);
