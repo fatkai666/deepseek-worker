@@ -90,7 +90,6 @@ const resolvers = {
       }
     },
   },
-  landingPage: false,
   cors: false,
   logging: true
 };
